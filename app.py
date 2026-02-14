@@ -30,28 +30,28 @@ class Venda(db.Model):
 # -------------------- SABORES INICIAIS --------------------
 
 sabores_iniciais = [
-    "Ninho com Nutella",
-    "Morango com Nutella",
-    "Ninho com Morango",
-    "Ninho com Maracujá",
-    "Leite Moça",
-    "Trufado de Maracujá",
-    "Chocolate",
+    "Abacate",
     "Amendoim",
-    "Paçoca",
-    "Tablito",
-    "Ovomaltine",
-    "Oreo",
+    "Chocolate",
+    "Coco Cremoso",
     "Doce de Leite",
+    "Leite Moça",
+    "Limão Siciliano",
+    "Manga",
+    "Milho verde",
+    "Morango com Nutella",
+    "Ninho com Maracujá",
+    "Ninho com Morango",
+    "Ninho com Nutella",
+    "Oreo",
+    "Oromaltine",
+    "Ouro Branco",
+    "Paçoca",
     "Prestígio",
     "Pudim",
-    "Milho verde",
-    "Ouro Branco",
-    "Abacate",
-    "Coco Cremoso",
-    "Limão Siciliano",
     "Sonho de Valsa",
-    "Manga"
+    "Tablito",
+    "Trufado de Maracujá"
 ]
 
 # -------------------- CRIAR BANCO --------------------
@@ -137,7 +137,13 @@ def relatorio_vendas():
     vendas = Venda.query.order_by(Venda.data.desc()).all()
     return render_template("relatorio_vendas.html", vendas=vendas)
 
+# Logout opcional
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect("/")
+
 # -------------------- RODAR APP --------------------
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
