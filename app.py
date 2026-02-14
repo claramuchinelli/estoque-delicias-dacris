@@ -9,6 +9,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+# --- MODELOS DO BANCO DE DADOS ---
+
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     telefone = db.Column(db.String(20), unique=True, nullable=False)
@@ -19,38 +21,25 @@ class Estoque(db.Model):
     sabor = db.Column(db.String(100), unique=True, nullable=False)
     quantidade = db.Column(db.Integer, default=0)
 
+# --- CONFIGURAÇÃO INICIAL (ORDEM ALFABÉTICA) ---
+
 sabores_iniciais = [
-    "Ninho com Nutella",
-    "Morango com Nutella",
-    "Ninho com Morango",
-    "Ninho com Maracujá",
-    "Leite Moça",
-    "Trufado de Maracujá",
-    "Chocolate",
-    "Amendoim",
-    "Paçoca",
-    "Tablito",
-    "Ovomaltine",
-    "Oreo",
-    "Doce de Leite",
-    "Prestígio",
-    "Pudim",
-    "Milho verde",
-    "Ouro Branco",
-    "Abacate",
-    "Coco Cremoso",
-    "Limão Siciliano",
-    "Sonho de Valsa",
-    "Manga"
+    "Abacate", "Amendoim", "Chocolate", "Coco Cremoso", "Doce de Leite",
+    "Leite Moça", "Limão Siciliano", "Manga", "Milho verde", "Morango com Nutella",
+    "Ninho com Maracujá", "Ninho com Morango", "Ninho com Nutella", "Oreo",
+    "Ouro Branco", "Ovomaltine", "Paçoca", "Prestígio", "Pudim", "Sonho de Valsa",
+    "Tablito", "Trufado de Maracujá"
 ]
 
-# Criar banco imediatamente ao iniciar
 with app.app_context():
     db.create_all()
-    for sabor in sabores_iniciais:
+    # Usamos sorted() para garantir a ordem na primeira carga do banco
+    for sabor in sorted(sabores_iniciais):
         if not Estoque.query.filter_by(sabor=sabor).first():
             db.session.add(Estoque(sabor=sabor, quantidade=0))
     db.session.commit()
+
+# --- ROTAS ---
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -67,6 +56,7 @@ def login():
             else:
                 return "Senha incorreta"
         else:
+            # Cria novo usuário se não existir
             novo = Usuario(telefone=telefone, senha=senha)
             db.session.add(novo)
             db.session.commit()
@@ -81,21 +71,29 @@ def estoque():
         return redirect("/")
 
     if request.method == "POST":
-        sabor = request.form["sabor"]
+        sabor_nome = request.form["sabor"]
         quantidade = int(request.form["quantidade"])
         tipo = request.form["tipo"]
 
-        item = Estoque.query.filter_by(sabor=sabor).first()
+        item = Estoque.query.filter_by(sabor=sabor_nome).first()
 
-        if tipo == "adicionar":
-            item.quantidade += quantidade
-        else:
-            item.quantidade -= quantidade
+        if item:
+            if tipo == "adicionar":
+                item.quantidade += quantidade
+            else:
+                # Evita que o estoque fique negativo (opcional, mas recomendado)
+                item.quantidade = max(0, item.quantidade - quantidade)
+            
+            db.session.commit()
 
-        db.session.commit()
-
-    itens = Estoque.query.all()
+    # BUSCA ORDENADA: Aqui garantimos a ordem alfabética na tela
+    itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
     return render_template("estoque.html", itens=itens)
 
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect("/")
+
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
