@@ -38,10 +38,11 @@ sabores_iniciais = [
 # -------------------- CRIAR BANCO --------------------
 with app.app_context():
     db.create_all()
-    for sabor in sabores_iniciais:
-        if not Estoque.query.filter_by(sabor=sabor).first():
+    # só adiciona sabores iniciais se não houver nenhum registro
+    if Estoque.query.count() == 0:
+        for sabor in sabores_iniciais:
             db.session.add(Estoque(sabor=sabor, quantidade=0))
-    db.session.commit()
+        db.session.commit()
 
 # -------------------- ROTAS --------------------
 @app.route("/", methods=["GET", "POST"])
@@ -82,7 +83,10 @@ def estoque():
         if tipo == "adicionar":
             item.quantidade += quantidade
         elif tipo == "remover":
-            item.quantidade -= quantidade
+            if item.quantidade >= quantidade:
+                item.quantidade -= quantidade
+            else:
+                return "Estoque insuficiente!"
         elif tipo == "venda":
             if item.quantidade >= quantidade:
                 item.quantidade -= quantidade
@@ -96,6 +100,7 @@ def estoque():
     itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
     return render_template("estoque.html", itens=itens)
 
+# -------------------- RELATÓRIOS --------------------
 @app.route("/relatorio/estoque")
 def relatorio_estoque():
     if "user" not in session:
@@ -110,6 +115,7 @@ def relatorio_vendas():
     vendas = Venda.query.order_by(Venda.data.desc()).all()
     return render_template("relatorio_vendas.html", vendas=vendas)
 
+# -------------------- LIMPAR ESTOQUE --------------------
 @app.route("/limpar_estoque")
 def limpar_estoque():
     if "user" not in session:
@@ -120,6 +126,19 @@ def limpar_estoque():
     db.session.commit()
     return redirect("/estoque")
 
+# -------------------- ZERAR UM PRODUTO --------------------
+@app.route("/zerar_estoque", methods=["POST"])
+def zerar_estoque():
+    if "user" not in session:
+        return redirect("/")
+    sabor = request.form["sabor"]
+    item = Estoque.query.filter_by(sabor=sabor).first()
+    if item:
+        item.quantidade = 0
+        db.session.commit()
+    return redirect("/estoque")
+
+# -------------------- LOGOUT --------------------
 @app.route("/logout")
 def logout():
     session.pop("user", None)
