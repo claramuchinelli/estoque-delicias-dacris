@@ -1,70 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Estoque - Delícias da Cris</title>
+    <meta charset="UTF-8">
+    <title>Estoque Delícias da Cris</title>
     <style>
         body {
-            font-family: Arial;
-            text-align: center;
-            background-color: #fffaf0;
+            font-family: Arial, sans-serif;
+            margin: 30px;
         }
-        h2 {
-            font-size: 38px;
+        h1, h2 {
+            color: #333;
         }
-        select, input {
-            font-size: 26px;
-            padding: 15px;
-            width: 80%;
-            margin: 10px;
+        table {
+            border-collapse: collapse;
+            width: 70%;
+            margin-top: 20px;
         }
-        button {
-            font-size: 28px;
-            padding: 15px 40px;
-            margin: 10px;
-            border-radius: 10px;
-            border: none;
+        table, th, td {
+            border: 1px solid #333;
         }
-        .adicionar {
-            background-color: #4CAF50;
-            color: white;
+        th, td {
+            padding: 8px;
+            text-align: left;
         }
-        .vender {
-            background-color: #ff4d4d;
-            color: white;
+        form {
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
-        .estoque-lista {
-            font-size: 26px;
-            margin-top: 30px;
+        select, input[type=number], button {
+            padding: 5px 10px;
+            margin-right: 10px;
+        }
+        .botoes-relatorio {
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
+    <h1>Estoque Delícias da Cris</h1>
 
-<img src="{{ url_for('static', filename='logo.png') }}" width="250"><br><br>
+    <!-- Botões de Relatório -->
+    <div class="botoes-relatorio">
+        <a href="/relatorio/estoque" target="_blank">
+            <button>Relatório de Estoque</button>
+        </a>
+        <a href="/relatorio/vendas" target="_blank">
+            <button>Relatório de Vendas</button>
+        </a>
+        <a href="/logout">
+            <button>Sair</button>
+        </a>
+    </div>
 
-<form method="POST">
-    <select name="sabor">
+    <!-- Formulário de Adicionar/Remover/Vender -->
+    <form method="POST">
+        <label>Sabor:</label>
+        <select name="sabor">
+            {% for item in itens %}
+            <option value="{{ item.sabor }}">{{ item.sabor }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Quantidade:</label>
+        <input type="number" name="quantidade" min="1" required>
+
+        <label>Tipo:</label>
+        <select name="tipo">
+            <option value="adicionar">Adicionar</option>
+            <option value="remover">Remover</option>
+            <option value="venda">Venda</option>
+        </select>
+
+        <button type="submit">Enviar</button>
+    </form>
+
+    <!-- Tabela de Estoque Atual -->
+    <h2>Estoque Atual</h2>
+    <table>
+        <tr>
+            <th>Sabor</th>
+            <th>Quantidade</th>
+        </tr>
         {% for item in itens %}
-        <option value="{{ item.sabor }}">{{ item.sabor }}</option>
+        <tr>
+            <td>{{ item.sabor }}</td>
+            <td>{{ item.quantidade }}</td>
+        </tr>
         {% endfor %}
-    </select><br>
-
-    <input type="number" name="quantidade" placeholder="Quantidade" required><br>
-
-    <select name="tipo">
-        <option value="adicionar">Adicionar Estoque</option>
-        <option value="vender">Registrar Venda</option>
-    </select><br>
-
-    <button type="submit" class="adicionar">CONFIRMAR</button>
-</form>
-
-<div class="estoque-lista">
-    <h3>📋 Estoque Atual</h3>
-    {% for item in itens %}
-        <p>{{ item.sabor }}: {{ item.quantidade }} unidades</p>
-    {% endfor %}
-</div>
-
+    </table>
 </body>
 </html>
