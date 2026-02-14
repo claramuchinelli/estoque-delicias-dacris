@@ -20,6 +20,13 @@ class Estoque(db.Model):
     sabor = db.Column(db.String(100), unique=True, nullable=False)
     quantidade = db.Column(db.Integer, default=0)
 
+# NOVA TABELA PARA VENDAS
+class Venda(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sabor = db.Column(db.String(100), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    data = db.Column(db.DateTime, default=db.func.current_timestamp())
+
 # Sabores iniciais
 sabores_iniciais = [
     "Ninho com Nutella",
