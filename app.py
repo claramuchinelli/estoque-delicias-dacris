@@ -90,7 +90,7 @@ def login():
 def estoque():
     if "user" not in session:
         return redirect("/")
-
+    
     if request.method == "POST":
         sabor = request.form["sabor"]
         quantidade = int(request.form["quantidade"])
@@ -100,10 +100,21 @@ def estoque():
 
         if tipo == "adicionar":
             item.quantidade += quantidade
-        else:
+        elif tipo == "remover":
             item.quantidade -= quantidade
+        elif tipo == "venda":  # nova opção
+            if item.quantidade >= quantidade:
+                item.quantidade -= quantidade
+                nova_venda = Venda(sabor=sabor, quantidade=quantidade)
+                db.session.add(nova_venda)
+            else:
+                return "Estoque insuficiente!"
 
         db.session.commit()
+
+    # Buscar itens em ordem alfabética
+    itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
+    return render_template("estoque.html", itens=itens)
 
     # Itens ordenados alfabeticamente
     itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
