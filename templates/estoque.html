@@ -15,7 +15,7 @@
         }
         table {
             border-collapse: collapse;
-            width: 80%;
+            width: 90%;
             margin-top: 20px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             background-color: #fff;
@@ -55,6 +55,12 @@
         }
         .botoes-relatorio button {
             margin-right: 10px;
+        }
+        .botao-zerar {
+            background-color: #ff4d4d;
+        }
+        .botao-zerar:hover {
+            background-color: #e63939;
         }
     </style>
 
@@ -99,8 +105,8 @@
         <label>Tipo:</label>
         <select name="tipo">
             <option value="adicionar">Adicionar Estoque</option>
+            <option value="remover">Remover Quantidade</option>
             <option value="venda">Registrar Venda</option>
-            <option value="limpar">Limpar Estoque</option>
         </select>
 
         <button type="submit">Enviar</button>
@@ -112,11 +118,19 @@
         <tr>
             <th>Sabor</th>
             <th>Quantidade</th>
+            <th>Ações</th>
         </tr>
         {% for item in itens %}
         <tr>
             <td>{{ item.sabor }}</td>
             <td>{{ item.quantidade }}</td>
+            <td>
+                <!-- Botão para zerar quantidade de um produto -->
+                <form method="POST" action="/zerar_estoque" style="display:inline;">
+                    <input type="hidden" name="sabor" value="{{ item.sabor }}">
+                    <button type="submit" class="botao-zerar">Zerar</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </table>
