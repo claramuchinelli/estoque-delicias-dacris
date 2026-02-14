@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Relatório de Vendas</title>
+    <title>Relatório de Vendas - Delícias da Cris</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,28 +26,28 @@
             text-align: left;
         }
         th {
-            background-color: #6a11cb;
+            background-color: #ffb347;
             color: white;
         }
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
         button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #6a11cb;
+            background-color: #ffb347;
             color: white;
             border: none;
+            padding: 10px 15px;
+            margin-top: 20px;
             cursor: pointer;
-            font-size: 16px;
         }
         button:hover {
-            background-color: #4e0fa1;
+            background-color: #ff9e0d;
         }
     </style>
 </head>
 <body>
     <h1>Relatório de Vendas</h1>
+
     <table>
         <tr>
             <th>Data</th>
@@ -56,12 +56,13 @@
         </tr>
         {% for venda in vendas %}
         <tr>
-            <td>{{ venda.data.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>{{ venda.data.strftime("%d/%m/%Y %H:%M") }}</td>
             <td>{{ venda.sabor }}</td>
             <td>{{ venda.quantidade }}</td>
         </tr>
         {% endfor %}
     </table>
-    <button onclick="window.print()">Imprimir</button>
+
+    <button onclick="window.print()">Imprimir Relatório</button>
 </body>
 </html>
