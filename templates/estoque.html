@@ -57,11 +57,20 @@
             margin-right: 10px;
         }
     </style>
+
+    <script>
+        // Confirmação antes de limpar todo o estoque
+        function confirmarLimpar() {
+            if (confirm("Tem certeza que deseja apagar todo o estoque? Essa ação NÃO tem volta!")) {
+                window.location.href = "/limpar_estoque";
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Estoque Delícias da Cris</h1>
 
-    <!-- Botões de Relatório -->
+    <!-- Botões de Relatório, Logout e Limpar Estoque -->
     <div class="botoes-relatorio">
         <a href="/relatorio/estoque" target="_blank">
             <button>Relatório de Estoque</button>
@@ -72,6 +81,7 @@
         <a href="/logout">
             <button>Sair</button>
         </a>
+        <button onclick="confirmarLimpar()">Limpar Estoque</button>
     </div>
 
     <!-- Formulário de Adicionar/Remover/Vender -->
@@ -90,6 +100,7 @@
         <select name="tipo">
             <option value="adicionar">Adicionar Estoque</option>
             <option value="venda">Registrar Venda</option>
+            <option value="remover">Remover Estoque</option>
         </select>
 
         <button type="submit">Enviar</button>
