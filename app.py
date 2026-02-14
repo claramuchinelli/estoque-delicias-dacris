@@ -9,7 +9,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# Modelos do banco
+# -------------------- MODELOS --------------------
+
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     telefone = db.Column(db.String(20), unique=True, nullable=False)
@@ -20,14 +21,14 @@ class Estoque(db.Model):
     sabor = db.Column(db.String(100), unique=True, nullable=False)
     quantidade = db.Column(db.Integer, default=0)
 
-# NOVA TABELA PARA VENDAS
 class Venda(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sabor = db.Column(db.String(100), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
     data = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-# Sabores iniciais
+# -------------------- SABORES INICIAIS --------------------
+
 sabores_iniciais = [
     "Ninho com Nutella",
     "Morango com Nutella",
@@ -53,7 +54,8 @@ sabores_iniciais = [
     "Manga"
 ]
 
-# Criar banco e adicionar sabores iniciais
+# -------------------- CRIAR BANCO --------------------
+
 with app.app_context():
     db.create_all()
     for sabor in sabores_iniciais:
@@ -61,7 +63,9 @@ with app.app_context():
             db.session.add(Estoque(sabor=sabor, quantidade=0))
     db.session.commit()
 
-# Rota de login
+# -------------------- ROTAS --------------------
+
+# Login
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -85,12 +89,12 @@ def login():
 
     return render_template("login.html")
 
-# Rota de estoque
+# Estoque
 @app.route("/estoque", methods=["GET", "POST"])
 def estoque():
     if "user" not in session:
         return redirect("/")
-    
+
     if request.method == "POST":
         sabor = request.form["sabor"]
         quantidade = int(request.form["quantidade"])
@@ -102,7 +106,7 @@ def estoque():
             item.quantidade += quantidade
         elif tipo == "remover":
             item.quantidade -= quantidade
-        elif tipo == "venda":  # nova opção
+        elif tipo == "venda":
             if item.quantidade >= quantidade:
                 item.quantidade -= quantidade
                 nova_venda = Venda(sabor=sabor, quantidade=quantidade)
@@ -112,15 +116,28 @@ def estoque():
 
         db.session.commit()
 
-    # Buscar itens em ordem alfabética
     itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
     return render_template("estoque.html", itens=itens)
 
-    # Itens ordenados alfabeticamente
+# Relatório de estoque
+@app.route("/relatorio/estoque")
+def relatorio_estoque():
+    if "user" not in session:
+        return redirect("/")
+    
     itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
-    return render_template("estoque.html", itens=itens)
+    return render_template("relatorio_estoque.html", itens=itens)
 
-# Rodar app
+# Relatório de vendas
+@app.route("/relatorio/vendas")
+def relatorio_vendas():
+    if "user" not in session:
+        return redirect("/")
+
+    vendas = Venda.query.order_by(Venda.data.desc()).all()
+    return render_template("relatorio_vendas.html", vendas=vendas)
+
+# -------------------- RODAR APP --------------------
+
 if __name__ == "__main__":
     app.run()
-    
