@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Relatório de Estoque</title>
+    <title>Relatório de Estoque - Delícias da Cris</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,7 +15,7 @@
         }
         table {
             border-collapse: collapse;
-            width: 80%;
+            width: 90%;
             margin-top: 20px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             background-color: #fff;
@@ -33,13 +33,12 @@
             background-color: #f2f2f2;
         }
         button {
-            margin-top: 20px;
-            padding: 10px 20px;
             background-color: #ffb347;
             color: white;
             border: none;
+            padding: 10px 15px;
+            margin-top: 20px;
             cursor: pointer;
-            font-size: 16px;
         }
         button:hover {
             background-color: #ff9e0d;
@@ -48,6 +47,7 @@
 </head>
 <body>
     <h1>Relatório de Estoque</h1>
+
     <table>
         <tr>
             <th>Sabor</th>
@@ -60,6 +60,7 @@
         </tr>
         {% endfor %}
     </table>
-    <button onclick="window.print()">Imprimir</button>
+
+    <button onclick="window.print()">Imprimir Relatório</button>
 </body>
 </html>
