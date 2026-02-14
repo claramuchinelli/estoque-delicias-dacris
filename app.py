@@ -4,13 +4,13 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.secret_key = "deliciasdacris"
 
+# Configuração do banco de dados
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///estoque.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# --- MODELOS DO BANCO DE DADOS ---
-
+# --- MODELOS ---
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     telefone = db.Column(db.String(20), unique=True, nullable=False)
@@ -21,31 +21,33 @@ class Estoque(db.Model):
     sabor = db.Column(db.String(100), unique=True, nullable=False)
     quantidade = db.Column(db.Integer, default=0)
 
-# --- CONFIGURAÇÃO INICIAL (ORDEM ALFABÉTICA) ---
-
-sabores_iniciais = [
-    "Abacate", "Amendoim", "Chocolate", "Coco Cremoso", "Doce de Leite",
-    "Leite Moça", "Limão Siciliano", "Manga", "Milho verde", "Morango com Nutella",
-    "Ninho com Maracujá", "Ninho com Morango", "Ninho com Nutella", "Oreo",
-    "Ouro Branco", "Ovomaltine", "Paçoca", "Prestígio", "Pudim", "Sonho de Valsa",
-    "Tablito", "Trufado de Maracujá"
-]
-
-with app.app_context():
+# --- FUNÇÃO PARA INICIALIZAR O BANCO (SÓ RODA UMA VEZ) ---
+def inicializar_banco():
+    sabores_iniciais = [
+        "Abacate", "Amendoim", "Chocolate", "Coco Cremoso", "Doce de Leite",
+        "Leite Moça", "Limão Siciliano", "Manga", "Milho verde", "Morango com Nutella",
+        "Ninho com Maracujá", "Ninho com Morango", "Ninho com Nutella", "Oreo",
+        "Ouro Branco", "Ovomaltine", "Paçoca", "Prestígio", "Pudim", "Sonho de Valsa",
+        "Tablito", "Trufado de Maracujá"
+    ]
+    
     db.create_all()
-    # Usamos sorted() para garantir a ordem na primeira carga do banco
-    for sabor in sorted(sabores_iniciais):
-        if not Estoque.query.filter_by(sabor=sabor).first():
-            db.session.add(Estoque(sabor=sabor, quantidade=0))
-    db.session.commit()
+    
+    # Verifica se já existem sabores para não duplicar toda vez que iniciar
+    if not Estoque.query.first():
+        for sabor in sorted(sabores_iniciais):
+            novo_sabor = Estoque(sabor=sabor, quantidade=0)
+            db.session.add(novo_sabor)
+        db.session.commit()
+        print("Banco de dados inicializado com sucesso!")
 
 # --- ROTAS ---
 
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        telefone = request.form["telefone"]
-        senha = request.form["senha"]
+        telefone = request.form.get("telefone")
+        senha = request.form.get("senha")
 
         usuario = Usuario.query.filter_by(telefone=telefone).first()
 
@@ -54,9 +56,8 @@ def login():
                 session["user"] = telefone
                 return redirect("/estoque")
             else:
-                return "Senha incorreta"
+                return "Senha incorreta", 401
         else:
-            # Cria novo usuário se não existir
             novo = Usuario(telefone=telefone, senha=senha)
             db.session.add(novo)
             db.session.commit()
@@ -71,29 +72,32 @@ def estoque():
         return redirect("/")
 
     if request.method == "POST":
-        sabor_nome = request.form["sabor"]
-        quantidade = int(request.form["quantidade"])
-        tipo = request.form["tipo"]
+        sabor_nome = request.form.get("sabor")
+        quantidade = int(request.form.get("quantidade", 0))
+        tipo = request.form.get("tipo")
 
         item = Estoque.query.filter_by(sabor=sabor_nome).first()
 
         if item:
             if tipo == "adicionar":
                 item.quantidade += quantidade
-            else:
-                # Evita que o estoque fique negativo (opcional, mas recomendado)
+            elif tipo == "remover":
                 item.quantidade = max(0, item.quantidade - quantidade)
             
             db.session.commit()
+        return redirect("/estoque") # Redireciona para evitar reenvio de formulário ao atualizar
 
-    # BUSCA ORDENADA: Aqui garantimos a ordem alfabética na tela
+    # Ordena por nome (A-Z) diretamente na busca do banco
     itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
     return render_template("estoque.html", itens=itens)
 
 @app.route("/logout")
 def logout():
-    session.pop("user", None)
+    session.clear()
     return redirect("/")
 
+# --- EXECUÇÃO ---
 if __name__ == "__main__":
+    with app.app_context():
+        inicializar_banco()
     app.run(debug=True)
