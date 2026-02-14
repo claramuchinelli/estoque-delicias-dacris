@@ -9,6 +9,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+# Modelos do banco
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     telefone = db.Column(db.String(20), unique=True, nullable=False)
@@ -19,6 +20,7 @@ class Estoque(db.Model):
     sabor = db.Column(db.String(100), unique=True, nullable=False)
     quantidade = db.Column(db.Integer, default=0)
 
+# Sabores iniciais
 sabores_iniciais = [
     "Ninho com Nutella",
     "Morango com Nutella",
@@ -44,7 +46,7 @@ sabores_iniciais = [
     "Manga"
 ]
 
-# Criar banco imediatamente ao iniciar
+# Criar banco e adicionar sabores iniciais
 with app.app_context():
     db.create_all()
     for sabor in sabores_iniciais:
@@ -52,6 +54,7 @@ with app.app_context():
             db.session.add(Estoque(sabor=sabor, quantidade=0))
     db.session.commit()
 
+# Rota de login
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -75,6 +78,7 @@ def login():
 
     return render_template("login.html")
 
+# Rota de estoque
 @app.route("/estoque", methods=["GET", "POST"])
 def estoque():
     if "user" not in session:
@@ -94,8 +98,11 @@ def estoque():
 
         db.session.commit()
 
-    itens = Estoque.query.all()
+    # Itens ordenados alfabeticamente
+    itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
     return render_template("estoque.html", itens=itens)
 
+# Rodar app
 if __name__ == "__main__":
     app.run()
+    
