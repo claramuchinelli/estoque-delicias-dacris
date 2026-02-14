@@ -20,49 +20,28 @@ class Estoque(db.Model):
     quantidade = db.Column(db.Integer, default=0)
 
 sabores_iniciais = [
-    "Ninho com Nutella": 0,
-
-    "Morango com Nutella": 0,
-
-    "Ninho com Morango": 0,
-
-    "Ninho com Maracujá": 0,
-
-    "Leite Moça": 0,
-
-    "Trufado de Maracujá": 0,
-
-    "Chocolate": 0,
-
-    "Amendoim": 0,
-
-    "Paçoca": 0,
-
-    "Tablito": 0,
-
-    "Ovomaltine": 0,
-
-    "Oreo": 0,
-
-    "Doce de Leite": 0,
-
-    "Prestígio": 0,
-
-    "Pudim": 0,
-
-    "Milho verde": 0,
-
-    "Ouro Branco": 0,
-
-    "Abacate": 0,
-
-    "Coco Cremoso": 0,
-
-    "Limão Siciliano": 0,
-
-    "Sonho de Valsa": 0,
-
-    "Manga": 0,
+    "Ninho com Nutella",
+    "Morango com Nutella",
+    "Ninho com Morango",
+    "Ninho com Maracujá",
+    "Leite Moça",
+    "Trufado de Maracujá",
+    "Chocolate",
+    "Amendoim",
+    "Paçoca",
+    "Tablito",
+    "Ovomaltine",
+    "Oreo",
+    "Doce de Leite",
+    "Prestígio",
+    "Pudim",
+    "Milho verde",
+    "Ouro Branco",
+    "Abacate",
+    "Coco Cremoso",
+    "Limão Siciliano",
+    "Sonho de Valsa",
+    "Manga"
 ]
 
 @app.before_first_request
