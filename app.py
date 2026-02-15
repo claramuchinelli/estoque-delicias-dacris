@@ -141,5 +141,41 @@ def estoque():
         db.session.commit()
         return redirect("/estoque")
 
-    itens = Estoque.query.order_by(Estoque.sabor
-::contentReference[oaicite:0]{index=0}
+    itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
+    return render_template("estoque.html", itens=itens)
+
+# ==============================
+# RELATÓRIO ESTOQUE
+# ==============================
+@app.route("/relatorio/estoque")
+def relatorio_estoque():
+    if "user" not in session:
+        return redirect("/")
+
+    itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
+    return render_template("relatorio_estoque.html", itens=itens)
+
+# ==============================
+# RELATÓRIO VENDAS
+# ==============================
+@app.route("/relatorio/vendas")
+def relatorio_vendas():
+    if "user" not in session:
+        return redirect("/")
+
+    vendas = Venda.query.order_by(Venda.data.desc()).all()
+    return render_template("relatorio_vendas.html", vendas=vendas)
+
+# ==============================
+# LOGOUT
+# ==============================
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect("/")
+
+# ==============================
+# RODAR LOCAL
+# ==============================
+if __name__ == "__main__":
+    app.run(debug=True)
