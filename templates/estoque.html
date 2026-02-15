@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estoque Delícias da Cris</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -10,92 +12,140 @@
             background-color: #f7f7f7;
             color: #333;
         }
+
         h1, h2 {
             color: #444;
         }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .botoes-relatorio {
+            margin-bottom: 20px;
+        }
+
+        .botoes-relatorio a {
+            text-decoration: none;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            margin-right: 10px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            background-color: #ffb347;
+            color: white;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #ff9e0d;
+        }
+
+        .form-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+        }
+
+        form label {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        select, input[type=number] {
+            padding: 8px 10px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
         table {
             border-collapse: collapse;
-            width: 80%;
-            margin-top: 20px;
+            width: 100%;
+            margin-top: 10px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             background-color: #fff;
         }
+
         th, td {
             padding: 12px 15px;
             border: 1px solid #ddd;
             text-align: left;
         }
+
         th {
             background-color: #ffb347;
             color: white;
         }
+
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
-        form {
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-        select, input[type=number], button {
-            padding: 8px 12px;
-            margin-right: 10px;
-            font-size: 14px;
-        }
-        button {
-            background-color: #ffb347;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #ff9e0d;
-        }
-        .botoes-relatorio {
-            margin-bottom: 20px;
-        }
-        .botoes-relatorio button {
-            margin-right: 10px;
+
+        @media (max-width: 600px) {
+            body {
+                margin: 10px;
+            }
+
+            .btn {
+                margin-top: 8px;
+                display: inline-block;
+            }
         }
     </style>
 </head>
 <body>
+
+<div class="container">
+
     <h1>Estoque Delícias da Cris</h1>
 
-    <!-- Botões de Relatório -->
+    <!-- Botões -->
     <div class="botoes-relatorio">
         <a href="/relatorio/estoque" target="_blank">
-            <button>Relatório de Estoque</button>
+            <button class="btn">Relatório de Estoque</button>
         </a>
+
         <a href="/relatorio/vendas" target="_blank">
-            <button>Relatório de Vendas</button>
+            <button class="btn">Relatório de Vendas</button>
         </a>
+
         <a href="/logout">
-            <button>Sair</button>
+            <button class="btn">Sair</button>
         </a>
     </div>
 
-    <!-- Formulário de Adicionar/Remover/Vender -->
-    <form method="POST">
-        <label>Sabor:</label>
-        <select name="sabor">
-            {% for item in itens %}
-            <option value="{{ item.sabor }}">{{ item.sabor }}</option>
-            {% endfor %}
-        </select>
+    <!-- Formulário -->
+    <div class="form-box">
+        <form method="POST">
+            <label>Sabor:</label>
+            <select name="sabor" required>
+                {% for item in itens %}
+                <option value="{{ item.sabor }}">{{ item.sabor }}</option>
+                {% endfor %}
+            </select>
 
-        <label>Quantidade:</label>
-        <input type="number" name="quantidade" min="1" required>
+            <label>Quantidade:</label>
+            <input type="number" name="quantidade" min="1" required>
 
-        <label>Tipo:</label>
-        <select name="tipo">
-            <option value="adicionar">Adicionar Estoque</option>
-            <option value="venda">Registra Venda</option>
-        </select>
+            <label>Tipo:</label>
+            <select name="tipo" required>
+                <option value="adicionar">Adicionar Estoque</option>
+                <option value="venda">Registrar Venda</option>
+            </select>
 
-        <button type="submit">Enviar</button>
-    </form>
+            <button type="submit" class="btn">Confirmar</button>
+        </form>
+    </div>
 
-    <!-- Tabela de Estoque Atual -->
+    <!-- Tabela -->
     <h2>Estoque Atual</h2>
     <table>
         <tr>
@@ -109,5 +159,8 @@
         </tr>
         {% endfor %}
     </table>
+
+</div>
+
 </body>
 </html>
