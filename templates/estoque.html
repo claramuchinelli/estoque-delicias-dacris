@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Estoque - Delícias da Cris</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background-color: #fffaf0;
+        }
+        h2 {
+            font-size: 38px;
+        }
+        select, input {
+            font-size: 26px;
+            padding: 15px;
+            width: 80%;
+            margin: 10px;
+        }
+        button {
+            font-size: 28px;
+            padding: 15px 40px;
+            margin: 10px;
+            border-radius: 10px;
+            border: none;
+        }
+        .adicionar {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .vender {
+            background-color: #ff4d4d;
+            color: white;
+        }
+        .estoque-lista {
+            font-size: 26px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<img src="{{ url_for('static', filename='logo.png') }}" width="250"><br><br>
+
+<h2>Controle de Estoque</h2>
+
+<form method="POST">
+    <select name="sabor">
+        {% for item in itens %}
+        <option value="{{ item.sabor }}">{{ item.sabor }}</option>
+        {% endfor %}
+    </select><br>
+
+    <input type="number" name="quantidade" placeholder="Quantidade" required><br>
+
+    <select name="tipo">
+        <option value="adicionar">Adicionar</option>
+        <option value="vender">Registrar Venda</option>
+    </select><br>
+
+    <button type="submit" class="adicionar">CONFIRMAR</button>
+</form>
+
+<div class="estoque-lista">
+    <h3>Estoque Atual</h3>
+    {% for item in itens %}
+        <p>{{ item.sabor }}: {{ item.quantidade }} unidades</p>
+    {% endfor %}
+</div>
+
+</body>
+</html>
