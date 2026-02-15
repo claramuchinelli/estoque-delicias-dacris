@@ -38,12 +38,12 @@ sabores_iniciais = [
 
 # -------------------- CRIAR BANCO AUTOMATICAMENTE --------------------
 with app.app_context():
-    db.create_all()  # cria todas as tabelas se não existirem
-    # só adiciona sabores iniciais se o banco estiver vazio
+    db.create_all()
     if Estoque.query.count() == 0:
         for sabor in sabores_iniciais:
             db.session.add(Estoque(sabor=sabor, quantidade=0))
         db.session.commit()
+)
 
 # -------------------- ROTAS --------------------
 @app.route("/", methods=["GET", "POST"])
