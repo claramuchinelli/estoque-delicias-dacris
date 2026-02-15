@@ -1,0 +1,14 @@
+<h1>Relatório de Estoque</h1>
+<table border="1">
+    <tr>
+        <th>Sabor</th>
+        <th>Quantidade</th>
+    </tr>
+    {% for item in itens %}
+    <tr>
+        <td>{{ item.sabor }}</td>
+        <td>{{ item.quantidade }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<button onclick="window.print()">Imprimir</button>
