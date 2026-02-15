@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = "deliciasdacris"
 
 # ==============================
-# CONFIGURAÇÃO DO BANCO (RENDER)
+# CONFIG BANCO RENDER
 # ==============================
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -28,10 +28,12 @@ class Usuario(db.Model):
     telefone = db.Column(db.String(20), unique=True, nullable=False)
     senha = db.Column(db.String(100))
 
+
 class Estoque(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sabor = db.Column(db.String(100), unique=True, nullable=False)
     quantidade = db.Column(db.Integer, default=0)
+
 
 class Venda(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,36 +41,21 @@ class Venda(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     data = db.Column(db.DateTime, default=db.func.current_timestamp())
 
+
 # ==============================
-# SABORES INICIAIS
+# SABORES
 # ==============================
 sabores_iniciais = [
-    "Abacate",
-    "Amendoim",
-    "Chocolate",
-    "Coco Cremoso",
-    "Doce de Leite",
-    "Leite Moça",
-    "Limão Siciliano",
-    "Manga",
-    "Milho verde",
-    "Morango com Nutella",
-    "Ninho com Maracujá",
-    "Ninho com Morango",
-    "Ninho com Nutella",
-    "Oreo",
-    "Ovomaltine",
-    "Ouro Branco",
-    "Paçoca",
-    "Prestígio",
-    "Pudim",
-    "Sonho de Valsa",
-    "Tablito",
-    "Trufado de Maracujá"
+    "Abacate", "Amendoim", "Chocolate", "Coco Cremoso", "Doce de Leite",
+    "Leite Moça", "Limão Siciliano", "Manga", "Milho verde",
+    "Morango com Nutella", "Ninho com Maracujá", "Ninho com Morango",
+    "Ninho com Nutella", "Oreo", "Ovomaltine", "Ouro Branco",
+    "Paçoca", "Prestígio", "Pudim", "Sonho de Valsa",
+    "Tablito", "Trufado de Maracujá"
 ]
 
 # ==============================
-# CRIAR TABELAS + SABORES
+# CRIA TABELAS + SABORES
 # ==============================
 with app.app_context():
     db.create_all()
@@ -106,6 +93,7 @@ def login():
 
     return render_template("login.html")
 
+
 # ==============================
 # ESTOQUE
 # ==============================
@@ -141,11 +129,12 @@ def estoque():
         db.session.commit()
         return redirect("/estoque")
 
-   itens = Estoque.query.order_by(Estoque.sabor).all()
+    itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
     return render_template("estoque.html", itens=itens)
 
+
 # ==============================
-# RELATÓRIO ESTOQUE
+# RELATORIO ESTOQUE
 # ==============================
 @app.route("/relatorio/estoque")
 def relatorio_estoque():
@@ -155,8 +144,9 @@ def relatorio_estoque():
     itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
     return render_template("relatorio_estoque.html", itens=itens)
 
+
 # ==============================
-# RELATÓRIO VENDAS
+# RELATORIO VENDAS
 # ==============================
 @app.route("/relatorio/vendas")
 def relatorio_vendas():
@@ -166,6 +156,7 @@ def relatorio_vendas():
     vendas = Venda.query.order_by(Venda.data.desc()).all()
     return render_template("relatorio_vendas.html", vendas=vendas)
 
+
 # ==============================
 # LOGOUT
 # ==============================
@@ -173,6 +164,7 @@ def relatorio_vendas():
 def logout():
     session.pop("user", None)
     return redirect("/")
+
 
 # ==============================
 # RODAR LOCAL
