@@ -1,0 +1,16 @@
+<h1>Relatório de Vendas</h1>
+<table border="1">
+    <tr>
+        <th>Data</th>
+        <th>Sabor</th>
+        <th>Quantidade</th>
+    </tr>
+    {% for venda in vendas %}
+    <tr>
+        <td>{{ venda.data.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ venda.sabor }}</td>
+        <td>{{ venda.quantidade }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<button onclick="window.print()">Imprimir</button>
