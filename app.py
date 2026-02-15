@@ -1,16 +1,17 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, flash
 from flask_sqlalchemy import SQLAlchemy
+import os
 
 app = Flask(__name__)
 app.secret_key = "deliciasdacris"
 
-# 🔹 Configurar PostgreSQL do Render
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://estoque_delicias_user:OpL3sEkxXBexhEYPqN8qbH5fu0sDPRl3@dpg-d68qd7l6ubrc73a7a9rg-a/estoque_delicias"
+# Banco SQLite local
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///estoque.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# 🔹 Tabelas do banco
+# Modelos
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     telefone = db.Column(db.String(20), unique=True, nullable=False)
@@ -27,23 +28,41 @@ class Venda(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     data = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-# 🔹 Sabores iniciais
-sabores_iniciais = [
-    "Abacate", "Amendoim", "Chocolate", "Coco Cremoso", "Doce de Leite", "Leite Moça",
-    "Limão Siciliano", "Manga", "Milho verde", "Morango com Nutella", "Ninho com Maracujá",
-    "Ninho com Morango", "Ninho com Nutella", "Oreo", "Ovomaltine", "Ouro Branco",
-    "Paçoca", "Prestígio", "Pudim", "Sonho de Valsa", "Tablito", "Trufado de Maracujá"
-]
+# Sabores iniciais
+sabores_iniciais = sorted([
+    "Ninho com Nutella",
+    "Morango com Nutella",
+    "Ninho com Morango",
+    "Ninho com Maracujá",
+    "Leite Moça",
+    "Trufado de Maracujá",
+    "Chocolate",
+    "Amendoim",
+    "Paçoca",
+    "Tablito",
+    "Ovomaltine",
+    "Oreo",
+    "Doce de Leite",
+    "Prestígio",
+    "Pudim",
+    "Milho verde",
+    "Ouro Branco",
+    "Abacate",
+    "Coco Cremoso",
+    "Limão Siciliano",
+    "Sonho de Valsa",
+    "Manga"
+])
 
-# 🔹 Criar tabelas e inserir sabores iniciais se estiver vazio
+# Criar banco e sabores iniciais automaticamente
 with app.app_context():
     db.create_all()
-    if Estoque.query.count() == 0:
-        for sabor in sabores_iniciais:
+    for sabor in sabores_iniciais:
+        if not Estoque.query.filter_by(sabor=sabor).first():
             db.session.add(Estoque(sabor=sabor, quantidade=0))
-        db.session.commit()
+    db.session.commit()
 
-# 🔹 Rota de login / cadastro
+# Rotas
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -51,13 +70,12 @@ def login():
         senha = request.form["senha"]
 
         usuario = Usuario.query.filter_by(telefone=telefone).first()
-
         if usuario:
             if usuario.senha == senha:
                 session["user"] = telefone
                 return redirect("/estoque")
             else:
-                return "Senha incorreta"
+                flash("Senha incorreta!", "error")
         else:
             novo = Usuario(telefone=telefone, senha=senha)
             db.session.add(novo)
@@ -66,13 +84,6 @@ def login():
             return redirect("/estoque")
     return render_template("login.html")
 
-# 🔹 Rota de logout
-@app.route("/logout")
-def logout():
-    session.pop("user", None)
-    return redirect("/")
-
-# 🔹 Rota de estoque
 @app.route("/estoque", methods=["GET", "POST"])
 def estoque():
     if "user" not in session:
@@ -84,65 +95,67 @@ def estoque():
         tipo = request.form["tipo"]
 
         item = Estoque.query.filter_by(sabor=sabor).first()
-
-        if tipo == "adicionar":
-            item.quantidade += quantidade
-        elif tipo == "remover":
-            item.quantidade -= quantidade
-            if item.quantidade < 0:
+        if item:
+            if tipo == "adicionar":
+                item.quantidade += quantidade
+            elif tipo == "remover":
+                item.quantidade = max(item.quantidade - quantidade, 0)
+            elif tipo == "zerar":
                 item.quantidade = 0
-        else:  # venda
-            item.quantidade -= quantidade
-            if item.quantidade < 0:
-                item.quantidade = 0
-            venda = Venda(sabor=sabor, quantidade=quantidade)
-            db.session.add(venda)
-
-        db.session.commit()
+            db.session.commit()
 
     itens = Estoque.query.order_by(Estoque.sabor).all()
     return render_template("estoque.html", itens=itens)
 
-# 🔹 Rota para zerar quantidade de um produto
-@app.route("/zerar_estoque", methods=["POST"])
-def zerar_estoque():
-    if "user" not in session:
-        return redirect("/")
-
-    sabor = request.form["sabor"]
-    item = Estoque.query.filter_by(sabor=sabor).first()
-    if item:
-        item.quantidade = 0
-        db.session.commit()
-    return redirect("/estoque")
-
-# 🔹 Rota para limpar todo o estoque
-@app.route("/limpar_estoque")
-def limpar_estoque():
-    if "user" not in session:
-        return redirect("/")
-
-    for item in Estoque.query.all():
-        item.quantidade = 0
-    db.session.commit()
-    return redirect("/estoque")
-
-# 🔹 Relatório de estoque
-@app.route("/relatorio/estoque")
+@app.route("/relatorio_estoque")
 def relatorio_estoque():
     if "user" not in session:
         return redirect("/")
     itens = Estoque.query.order_by(Estoque.sabor).all()
     return render_template("relatorio_estoque.html", itens=itens)
 
-# 🔹 Relatório de vendas
-@app.route("/relatorio/vendas")
+@app.route("/relatorio_vendas")
 def relatorio_vendas():
     if "user" not in session:
         return redirect("/")
     vendas = Venda.query.order_by(Venda.data.desc()).all()
     return render_template("relatorio_vendas.html", vendas=vendas)
 
-# 🔹 Rodar o app
+@app.route("/vender", methods=["POST"])
+def vender():
+    if "user" not in session:
+        return redirect("/")
+
+    sabor = request.form["sabor"]
+    quantidade = int(request.form["quantidade"])
+    item = Estoque.query.filter_by(sabor=sabor).first()
+
+    if item and item.quantidade >= quantidade:
+        item.quantidade -= quantidade
+        venda = Venda(sabor=sabor, quantidade=quantidade)
+        db.session.add(venda)
+        db.session.commit()
+        flash(f"{quantidade} {sabor} vendido(s)!", "success")
+    else:
+        flash("Quantidade insuficiente!", "error")
+
+    return redirect("/estoque")
+
+@app.route("/limpar_estoque", methods=["POST"])
+def limpar_estoque():
+    if "user" not in session:
+        return redirect("/")
+
+    # Zerar todas as quantidades
+    Estoque.query.update({Estoque.quantidade: 0})
+    db.session.commit()
+    flash("Estoque zerado com sucesso!", "success")
+    return redirect("/estoque")
+
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect("/")
+
 if __name__ == "__main__":
     app.run(debug=True)
