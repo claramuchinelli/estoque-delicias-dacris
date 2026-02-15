@@ -5,11 +5,8 @@ import os
 app = Flask(__name__)
 app.secret_key = "deliciasdacris"
 
-# Conexão com o PostgreSQL do Render via variável de ambiente
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "DATABASE_URL",
-    "postgresql://estoque_delicias_user:OpL3sEkxXBexhEYPqN8qbH5fu0sDPRl3@dpg-d68qd7l6ubrc73a7a9rg-a/estoque_delicias"
-)
+# Configuração do banco PostgreSQL pelo Render
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")  # pega a URL do Render
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
@@ -57,7 +54,7 @@ sabores_iniciais = sorted([
     "Manga"
 ])
 
-# Criar banco e sabores iniciais automaticamente
+# Criar tabelas e sabores iniciais (executa apenas se não existir)
 with app.app_context():
     db.create_all()
     for sabor in sabores_iniciais:
@@ -101,10 +98,13 @@ def estoque():
         if item:
             if tipo == "adicionar":
                 item.quantidade += quantidade
-            elif tipo == "remover":
-                item.quantidade = max(item.quantidade - quantidade, 0)
-            elif tipo == "zerar":
-                item.quantidade = 0
+            elif tipo == "venda":
+                if item.quantidade >= quantidade:
+                    item.quantidade -= quantidade
+                    venda = Venda(sabor=sabor, quantidade=quantidade)
+                    db.session.add(venda)
+                else:
+                    flash("Quantidade insuficiente!", "error")
             db.session.commit()
 
     itens = Estoque.query.order_by(Estoque.sabor).all()
@@ -124,34 +124,25 @@ def relatorio_vendas():
     vendas = Venda.query.order_by(Venda.data.desc()).all()
     return render_template("relatorio_vendas.html", vendas=vendas)
 
-@app.route("/vender", methods=["POST"])
-def vender():
-    if "user" not in session:
-        return redirect("/")
-
-    sabor = request.form["sabor"]
-    quantidade = int(request.form["quantidade"])
-    item = Estoque.query.filter_by(sabor=sabor).first()
-
-    if item and item.quantidade >= quantidade:
-        item.quantidade -= quantidade
-        venda = Venda(sabor=sabor, quantidade=quantidade)
-        db.session.add(venda)
-        db.session.commit()
-        flash(f"{quantidade} {sabor} vendido(s)!", "success")
-    else:
-        flash("Quantidade insuficiente!", "error")
-
-    return redirect("/estoque")
-
 @app.route("/limpar_estoque", methods=["POST"])
 def limpar_estoque():
     if "user" not in session:
         return redirect("/")
-
     Estoque.query.update({Estoque.quantidade: 0})
     db.session.commit()
     flash("Estoque zerado com sucesso!", "success")
+    return redirect("/estoque")
+
+@app.route("/zerar_estoque", methods=["POST"])
+def zerar_estoque():
+    if "user" not in session:
+        return redirect("/")
+    sabor = request.form["sabor"]
+    item = Estoque.query.filter_by(sabor=sabor).first()
+    if item:
+        item.quantidade = 0
+        db.session.commit()
+        flash(f"Estoque do sabor {sabor} zerado!", "success")
     return redirect("/estoque")
 
 @app.route("/logout")
@@ -160,5 +151,5 @@ def logout():
     return redirect("/")
 
 if __name__ == "__main__":
-    # Para Render: não usar debug=True em produção
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
