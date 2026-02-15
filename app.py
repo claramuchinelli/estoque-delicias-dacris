@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.secret_key = "deliciasdacris"
 
+# Configuração do banco SQLite
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///estoque.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -35,10 +36,10 @@ sabores_iniciais = [
     "Tablito","Trufado de Maracujá"
 ]
 
-# -------------------- CRIAR BANCO --------------------
+# -------------------- CRIAR BANCO AUTOMATICAMENTE --------------------
 with app.app_context():
-    db.create_all()
-    # só adiciona sabores iniciais se não houver nenhum registro
+    db.create_all()  # cria todas as tabelas se não existirem
+    # só adiciona sabores iniciais se o banco estiver vazio
     if Estoque.query.count() == 0:
         for sabor in sabores_iniciais:
             db.session.add(Estoque(sabor=sabor, quantidade=0))
