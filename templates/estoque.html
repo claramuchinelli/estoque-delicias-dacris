@@ -22,60 +22,39 @@
             margin: auto;
         }
 
-        .botoes-relatorio {
-            margin-bottom: 20px;
-        }
-
-        .botoes-relatorio a {
-            text-decoration: none;
-        }
-
         .btn {
-            padding: 10px 16px;
-            margin-right: 10px;
-            font-size: 14px;
+            padding: 8px 14px;
+            margin-right: 6px;
+            font-size: 13px;
             border: none;
             cursor: pointer;
             border-radius: 6px;
             background-color: #ffb347;
             color: white;
-            transition: 0.2s;
         }
 
         .btn:hover {
             background-color: #ff9e0d;
         }
 
-        .form-box {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            margin-bottom: 25px;
+        .btn-danger {
+            background-color: #e74c3c;
         }
 
-        form label {
-            margin-right: 8px;
-            font-weight: bold;
-        }
-
-        select, input[type=number] {
-            padding: 8px 10px;
-            margin-right: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+        .btn-danger:hover {
+            background-color: #c0392b;
         }
 
         table {
             border-collapse: collapse;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 15px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             background-color: #fff;
         }
 
         th, td {
-            padding: 12px 15px;
+            padding: 10px 12px;
             border: 1px solid #ddd;
             text-align: left;
         }
@@ -89,17 +68,34 @@
             background-color: #f2f2f2;
         }
 
-        @media (max-width: 600px) {
+        .zero {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* IMPRESSÃO COLORIDA */
+        @media print {
             body {
-                margin: 10px;
+                background: white;
+            }
+
+            th {
+                background-color: #ffb347 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
             .btn {
-                margin-top: 8px;
-                display: inline-block;
+                display: none;
             }
         }
     </style>
+
+    <script>
+        function confirmarZerar(sabor) {
+            return confirm("Tem certeza que deseja zerar o estoque de " + sabor + "? Essa ação não pode ser desfeita.");
+        }
+    </script>
 </head>
 <body>
 
@@ -107,8 +103,7 @@
 
     <h1>Estoque Delícias da Cris</h1>
 
-    <!-- Botões -->
-    <div class="botoes-relatorio">
+    <div style="margin-bottom:20px;">
         <a href="/relatorio/estoque" target="_blank">
             <button class="btn">Relatório de Estoque</button>
         </a>
@@ -122,40 +117,55 @@
         </a>
     </div>
 
-    <!-- Formulário -->
-    <div class="form-box">
-        <form method="POST">
-            <label>Sabor:</label>
-            <select name="sabor" required>
-                {% for item in itens %}
-                <option value="{{ item.sabor }}">{{ item.sabor }}</option>
-                {% endfor %}
-            </select>
+    <!-- FORM -->
+    <form method="POST" style="margin-bottom:20px;">
+        <label>Sabor:</label>
+        <select name="sabor" required>
+            {% for item in itens %}
+            <option value="{{ item.sabor }}">{{ item.sabor }}</option>
+            {% endfor %}
+        </select>
 
-            <label>Quantidade:</label>
-            <input type="number" name="quantidade" min="1" required>
+        <label>Quantidade:</label>
+        <input type="number" name="quantidade" min="1" required>
 
-            <label>Tipo:</label>
-            <select name="tipo" required>
-                <option value="adicionar">Adicionar Estoque</option>
-                <option value="venda">Registrar Venda</option>
-            </select>
+        <label>Tipo:</label>
+        <select name="tipo" required>
+            <option value="adicionar">Adicionar</option>
+            <option value="venda">Venda</option>
+        </select>
 
-            <button type="submit" class="btn">Confirmar</button>
-        </form>
-    </div>
+        <button type="submit" class="btn">Confirmar</button>
+    </form>
 
-    <!-- Tabela -->
     <h2>Estoque Atual</h2>
+
     <table>
         <tr>
             <th>Sabor</th>
             <th>Quantidade</th>
+            <th>Ação</th>
         </tr>
+
         {% for item in itens %}
         <tr>
             <td>{{ item.sabor }}</td>
-            <td>{{ item.quantidade }}</td>
+
+            <td class="{% if item.quantidade == 0 %}zero{% endif %}">
+                {{ item.quantidade }}
+            </td>
+
+            <td>
+                <form method="POST" style="display:inline;"
+                      onsubmit="return confirmarZerar('{{ item.sabor }}')">
+                    <input type="hidden" name="sabor" value="{{ item.sabor }}">
+                    <input type="hidden" name="quantidade" value="0">
+                    <input type="hidden" name="tipo" value="zerar">
+                    <button type="submit" class="btn btn-danger">
+                        Zerar
+                    </button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </table>
