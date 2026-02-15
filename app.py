@@ -141,7 +141,7 @@ def estoque():
         db.session.commit()
         return redirect("/estoque")
 
-    itens = Estoque.query.order_by(Estoque.sabor.asc()).all()
+   itens = Estoque.query.order_by(Estoque.sabor).all()
     return render_template("estoque.html", itens=itens)
 
 # ==============================
