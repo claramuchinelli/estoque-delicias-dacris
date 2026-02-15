@@ -5,10 +5,11 @@ import os
 app = Flask(__name__)
 app.secret_key = "deliciasdacris"
 
-# Banco SQLite local
-import os
-
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+# Conexão com o PostgreSQL do Render via variável de ambiente
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL",
+    "postgresql://estoque_delicias_user:OpL3sEkxXBexhEYPqN8qbH5fu0sDPRl3@dpg-d68qd7l6ubrc73a7a9rg-a/estoque_delicias"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
@@ -148,7 +149,6 @@ def limpar_estoque():
     if "user" not in session:
         return redirect("/")
 
-    # Zerar todas as quantidades
     Estoque.query.update({Estoque.quantidade: 0})
     db.session.commit()
     flash("Estoque zerado com sucesso!", "success")
@@ -160,4 +160,5 @@ def logout():
     return redirect("/")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Para Render: não usar debug=True em produção
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
